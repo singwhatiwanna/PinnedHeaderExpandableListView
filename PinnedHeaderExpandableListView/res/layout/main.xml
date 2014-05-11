@@ -1,0 +1,57 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <!--
+     android:groupIndicator="@null" 取消默认图片
+     android:childIndicatorLeft 设置孩子左边间距
+     android:dividerHeight 这个高度一定要设置，不然显示不出来分割线，估计默认为0 吧
+     android:childDivider="@drawable/child_bg" 这个直接引color,或者图片会导致整个孩子背景都为这个颜色
+    -->
+
+    <com.ryg.expandable.ui.StickyLayout
+		android:id="@+id/sticky_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+		android:layout_marginTop="0dp"
+        android:orientation="vertical" >
+
+        <LinearLayout
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:gravity="center"
+            android:background="#78A524"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:id="@+id/imageView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_launcher" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" >
+
+            <com.ryg.expandable.ui.PinnedHeaderExpandableListView
+                android:id="@+id/expandablelist"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:cacheColorHint="@null"
+                android:childDivider="@drawable/child_bg"
+                android:childIndicatorLeft="0dp"
+                android:divider="@color/Grey"
+                android:dividerHeight="1dp"
+                android:groupIndicator="@null"
+                android:scrollbarAlwaysDrawHorizontalTrack="false" >
+            </com.ryg.expandable.ui.PinnedHeaderExpandableListView>
+        </LinearLayout>
+    </com.ryg.expandable.ui.StickyLayout>
+
+</RelativeLayout>
