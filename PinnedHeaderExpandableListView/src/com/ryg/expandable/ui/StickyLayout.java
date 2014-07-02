@@ -36,11 +36,12 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
 
 public class StickyLayout extends LinearLayout {
     private static final String TAG = "StickyLayout";
+    private static final boolean DEBUG = true;
 
     public interface OnGiveUpTouchEventListener {
         public boolean giveUpTouchEvent(MotionEvent event);
@@ -70,6 +71,8 @@ public class StickyLayout extends LinearLayout {
 
     // 用来控制滑动角度，仅当角度a满足如下条件才进行滑动：tan a = deltaX / deltaY > 2
     private static final int TAN = 2;
+
+    private boolean mIsSticky = true;
 
     public StickyLayout(Context context) {
         super(context);
@@ -101,9 +104,11 @@ public class StickyLayout extends LinearLayout {
             mOriginalHeaderHeight = mHeader.getMeasuredHeight();
             mHeaderHeight = mOriginalHeaderHeight;
             mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-            Log.d(TAG, "mTouchSlop = " + mTouchSlop);
+            if (DEBUG) {
+                Log.d(TAG, "mTouchSlop = " + mTouchSlop);
+            }
         } else {
-            throw new NoSuchElementException("Did your view with \"header\" or \"content\" exist?");
+            throw new NoSuchElementException("Did your view with id \"header\" or \"content\" exists?");
         }
     }
 
@@ -147,15 +152,19 @@ public class StickyLayout extends LinearLayout {
             break;
         }
 
-        Log.d(TAG, "intercepted=" + intercepted);
-        return intercepted != 0;
+        if (DEBUG) {
+            Log.d(TAG, "intercepted=" + intercepted);
+        }
+        return intercepted != 0 && mIsSticky;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (!mIsSticky) {
+            return true;
+        }
         int x = (int) event.getX();
         int y = (int) event.getY();
-        Log.d(TAG, "x=" + x + "  y=" + y + "  mlastY=" + mLastY);
         switch (event.getAction()) {
         case MotionEvent.ACTION_DOWN: {
             break;
@@ -163,7 +172,9 @@ public class StickyLayout extends LinearLayout {
         case MotionEvent.ACTION_MOVE: {
             int deltaX = x - mLastX;
             int deltaY = y - mLastY;
-            Log.d(TAG, "mHeaderHeight=" + mHeaderHeight + "  deltaY=" + deltaY + "  mlastY=" + mLastY);
+            if (DEBUG) {
+                Log.d(TAG, "mHeaderHeight=" + mHeaderHeight + "  deltaY=" + deltaY + "  mlastY=" + mLastY);
+            }
             mHeaderHeight += deltaY;
             setHeaderHeight(mHeaderHeight);
             break;
@@ -189,8 +200,12 @@ public class StickyLayout extends LinearLayout {
         mLastY = y;
         return true;
     }
-    
+
     public void smoothSetHeaderHeight(final int from, final int to, long duration) {
+        smoothSetHeaderHeight(from, to, duration, false);
+    }
+
+    public void smoothSetHeaderHeight(final int from, final int to, long duration, final boolean modifyOriginalHeaderHeight) {
         final int frameCount = (int) (duration / 1000f * 30) + 1;
         final float partation = (to - from) / (float) frameCount;
         new Thread("Thread#smoothSetHeaderHeight") {
@@ -215,23 +230,49 @@ public class StickyLayout extends LinearLayout {
                         e.printStackTrace();
                     }
                 }
+
+                if (modifyOriginalHeaderHeight) {
+                    setOriginalHeaderHeight(to);
+                }
             };
 
         }.start();
     }
 
-    private void setHeaderHeight(int height) {
-        Log.d(TAG, "setHeaderHeight height=" + height);
+    public void setOriginalHeaderHeight(int originalHeaderHeight) {
+        mOriginalHeaderHeight = originalHeaderHeight;
+    }
+
+    public void setHeaderHeight(int height, boolean modifyOriginalHeaderHeight) {
+        if (modifyOriginalHeaderHeight) {
+            setOriginalHeaderHeight(height);
+        }
+        setHeaderHeight(height);
+    }
+
+    public void setHeaderHeight(int height) {
+        if (DEBUG) {
+            Log.d(TAG, "setHeaderHeight height=" + height);
+        }
         if (height < 0) {
             height = 0;
         } else if (height > mOriginalHeaderHeight) {
             height = mOriginalHeaderHeight;
         }
-        if (mHeaderHeight != height || true) {
-            mHeaderHeight = height;
-            mHeader.getLayoutParams().height = mHeaderHeight;
+
+        if (mHeader != null && mHeader.getLayoutParams() != null) {
+            mHeader.getLayoutParams().height = height;
             mHeader.requestLayout();
+            mHeaderHeight = height;
+        } else {
+            if (DEBUG) {
+                Log.w(TAG, "null LayoutParams when setHeaderHeight");
+            }
         }
+    }
+
+    public void setSticky(boolean isSticky) {
+        mIsSticky = isSticky;
     }
 
 }

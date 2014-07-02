@@ -35,8 +35,6 @@ public class MainActivity extends Activity implements
     private ArrayList<List<People>> childList;
 
     private MyexpandableListAdapter adapter;
-    
-    private ViewGroup mHeaderView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -268,18 +266,17 @@ public class MainActivity extends Activity implements
 
     @Override
     public View getPinnedHeader() {
-        if (mHeaderView == null) {
-            mHeaderView = (ViewGroup) getLayoutInflater().inflate(R.layout.group, null);
-            mHeaderView.setLayoutParams(new LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        }
-        return mHeaderView;
+        View headerView = (ViewGroup) getLayoutInflater().inflate(R.layout.group, null);
+        headerView.setLayoutParams(new LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        return headerView;
     }
 
     @Override
-    public void updatePinnedHeader(int firstVisibleGroupPos) {
+    public void updatePinnedHeader(View headerView, int firstVisibleGroupPos) {
         Group firstVisibleGroup = (Group) adapter.getGroup(firstVisibleGroupPos);
-        TextView textView = (TextView) getPinnedHeader().findViewById(R.id.group);
+        TextView textView = (TextView) headerView.findViewById(R.id.group);
         textView.setText(firstVisibleGroup.getTitle());
     }
 
