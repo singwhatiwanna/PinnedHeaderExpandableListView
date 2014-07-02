@@ -9,12 +9,12 @@ Android中，大家都用过ListView，ExpandableListView等，也许你还用�
 ```java
     public interface OnHeaderUpdateListener {
         /**
-         * 采用单例模式返回同一个view对象即可
+         * 返回一个view对象即可
          * 注意：view必须要有LayoutParams
          */
         public View getPinnedHeader();
 
-        public void updatePinnedHeader(int firstVisibleGroupPos);
+        public void updatePinnedHeader(View headerView, int firstVisibleGroupPos);
     }
     
     public interface OnGiveUpTouchEventListener {
@@ -27,18 +27,17 @@ Android中，大家都用过ListView，ExpandableListView等，也许你还用�
 ```java
     @Override
     public View getPinnedHeader() {
-        if (mHeaderView == null) {
-            mHeaderView = (ViewGroup) getLayoutInflater().inflate(R.layout.group, null);
-            mHeaderView.setLayoutParams(new LayoutParams(
-                    LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        }
-        return mHeaderView;
+        View headerView = (ViewGroup) getLayoutInflater().inflate(R.layout.group, null);
+        headerView.setLayoutParams(new LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        return headerView;
     }
 
     @Override
-    public void updatePinnedHeader(int firstVisibleGroupPos) {
+    public void updatePinnedHeader(View headerView, int firstVisibleGroupPos) {
         Group firstVisibleGroup = (Group) adapter.getGroup(firstVisibleGroupPos);
-        TextView textView = (TextView) getPinnedHeader().findViewById(R.id.group);
+        TextView textView = (TextView) headerView.findViewById(R.id.group);
         textView.setText(firstVisibleGroup.getTitle());
     }
 
