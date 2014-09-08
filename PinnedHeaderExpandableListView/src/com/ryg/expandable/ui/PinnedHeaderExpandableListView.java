@@ -38,7 +38,6 @@ import android.widget.AbsListView;
 import android.widget.ExpandableListView;
 import android.widget.AbsListView.OnScrollListener;
 
-
 public class PinnedHeaderExpandableListView extends ExpandableListView implements OnScrollListener {
     private static final String TAG = "PinnedHeaderExpandableListView";
     private static final boolean DEBUG = true;
@@ -63,6 +62,7 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
     private OnHeaderUpdateListener mHeaderUpdateListener;
 
     private boolean mActionDownHappened = false;
+    protected boolean mIsHeaderGroupClickable = true;
 
 
     public PinnedHeaderExpandableListView(Context context) {
@@ -89,8 +89,22 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
     public void setOnScrollListener(OnScrollListener l) {
         if (l != this) {
             mScrollListener = l;
+        } else {
+            mScrollListener = null;
         }
         super.setOnScrollListener(this);
+    }
+
+    /**
+     * 给group添加点击事件监听
+     * @param onGroupClickListener 监听
+     * @param isHeaderGroupClickable 表示header是否可点击<br/>
+     * note : 当不想group可点击的时候，需要在OnGroupClickListener#onGroupClick中返回true，
+     * 并将isHeaderGroupClickable设为false即可
+     */
+    public void setOnGroupClickListener(OnGroupClickListener onGroupClickListener, boolean isHeaderGroupClickable) {
+        mIsHeaderGroupClickable = isHeaderGroupClickable;
+        super.setOnGroupClickListener(onGroupClickListener);
     }
 
     public void setOnHeaderUpdateListener(OnHeaderUpdateListener listener) {
@@ -151,7 +165,7 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
                 if (touchTarget == mTouchTarget && mTouchTarget.isClickable()) {
                     mTouchTarget.performClick();
                     invalidate(new Rect(0, 0, mHeaderWidth, mHeaderHeight));
-                } else {
+                } else if (mIsHeaderGroupClickable){
                     int groupPosition = getPackedPositionGroup(getExpandableListPosition(pos));
                     if (groupPosition != INVALID_POSITION && mActionDownHappened) {
                         if (isGroupExpanded(groupPosition)) {
@@ -242,12 +256,6 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
 
     @Override
     public void onScrollStateChanged(AbsListView view, int scrollState) {
-        if (mHeaderView != null && scrollState == SCROLL_STATE_IDLE) {
-            int firstVisiblePos = getFirstVisiblePosition();
-            if (firstVisiblePos == 0) {
-                mHeaderView.layout(0, 0, mHeaderWidth, mHeaderHeight);
-            }
-        }
         if (mScrollListener != null) {
             mScrollListener.onScrollStateChanged(view, scrollState);
         }
