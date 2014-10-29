@@ -73,6 +73,8 @@ public class StickyLayout extends LinearLayout {
     private static final int TAN = 2;
 
     private boolean mIsSticky = true;
+    private boolean mInitDataSucceed = false;
+    private boolean mDisallowInterceptTouchEventOnHeader = true;
 
     public StickyLayout(Context context) {
         super(context);
@@ -96,19 +98,22 @@ public class StickyLayout extends LinearLayout {
     }
 
     private void initData() {
-        int headerId= getResources().getIdentifier("header", "id", getContext().getPackageName());
-        int contentId = getResources().getIdentifier("content", "id", getContext().getPackageName());
+        int headerId= getResources().getIdentifier("sticky_header", "id", getContext().getPackageName());
+        int contentId = getResources().getIdentifier("sticky_content", "id", getContext().getPackageName());
         if (headerId != 0 && contentId != 0) {
             mHeader = findViewById(headerId);
             mContent = findViewById(contentId);
             mOriginalHeaderHeight = mHeader.getMeasuredHeight();
             mHeaderHeight = mOriginalHeaderHeight;
             mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
+            if (mHeaderHeight > 0) {
+                mInitDataSucceed = true;
+            }
             if (DEBUG) {
-                Log.d(TAG, "mTouchSlop = " + mTouchSlop);
+                Log.d(TAG, "mTouchSlop = " + mTouchSlop + "mHeaderHeight = " + mHeaderHeight);
             }
         } else {
-            throw new NoSuchElementException("Did your view with id \"header\" or \"content\" exists?");
+            throw new NoSuchElementException("Did your view with id \"sticky_header\" or \"sticky_content\" exists?");
         }
     }
 
@@ -134,7 +139,11 @@ public class StickyLayout extends LinearLayout {
         case MotionEvent.ACTION_MOVE: {
             int deltaX = x - mLastXIntercept;
             int deltaY = y - mLastYIntercept;
-            if (mStatus == STATUS_EXPANDED && deltaY <= -mTouchSlop) {
+            if (mDisallowInterceptTouchEventOnHeader && y <= getHeaderHeight()) {
+                intercepted = 0;
+            } else if (Math.abs(deltaY) <= Math.abs(deltaX)) {
+                intercepted = 0;
+            } else if (mStatus == STATUS_EXPANDED && deltaY <= -mTouchSlop) {
                 intercepted = 1;
             } else if (mGiveUpTouchEventListener != null) {
                 if (mGiveUpTouchEventListener.giveUpTouchEvent(event) && deltaY >= mTouchSlop) {
@@ -251,13 +260,23 @@ public class StickyLayout extends LinearLayout {
     }
 
     public void setHeaderHeight(int height) {
+        if (!mInitDataSucceed) {
+            initData();
+        }
+
         if (DEBUG) {
             Log.d(TAG, "setHeaderHeight height=" + height);
         }
-        if (height < 0) {
+        if (height <= 0) {
             height = 0;
         } else if (height > mOriginalHeaderHeight) {
             height = mOriginalHeaderHeight;
+        }
+
+        if (height == 0) {
+            mStatus = STATUS_COLLAPSED;
+        } else {
+            mStatus = STATUS_EXPANDED;
         }
 
         if (mHeader != null && mHeader.getLayoutParams() != null) {
@@ -266,13 +285,21 @@ public class StickyLayout extends LinearLayout {
             mHeaderHeight = height;
         } else {
             if (DEBUG) {
-                Log.w(TAG, "null LayoutParams when setHeaderHeight");
+                Log.e(TAG, "null LayoutParams when setHeaderHeight");
             }
         }
     }
 
+    public int getHeaderHeight() {
+        return mHeaderHeight;
+    }
+
     public void setSticky(boolean isSticky) {
         mIsSticky = isSticky;
+    }
+
+    public void requestDisallowInterceptTouchEventOnHeader(boolean disallowIntercept) {
+        mDisallowInterceptTouchEventOnHeader = disallowIntercept;
     }
 
 }

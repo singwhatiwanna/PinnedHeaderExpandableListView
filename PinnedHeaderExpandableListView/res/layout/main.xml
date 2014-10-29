@@ -18,7 +18,7 @@
         android:orientation="vertical" >
 
         <LinearLayout
-            android:id="@+id/header"
+            android:id="@+id/sticky_header"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:gravity="center"
@@ -34,7 +34,7 @@
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/content"
+            android:id="@+id/sticky_content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical" >

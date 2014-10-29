@@ -229,7 +229,7 @@ public class PinnedHeaderExpandableListView extends ExpandableListView implement
         int firstVisibleGroupPos = getPackedPositionGroup(getExpandableListPosition(firstVisiblePos));
         int group = getPackedPositionGroup(getExpandableListPosition(pos));
         if (DEBUG) {
-            Log.w(TAG, "refreshHeader firstVisibleGroupPos=" + firstVisibleGroupPos);
+            Log.d(TAG, "refreshHeader firstVisibleGroupPos=" + firstVisibleGroupPos);
         }
 
         if (group == firstVisibleGroupPos + 1) {
