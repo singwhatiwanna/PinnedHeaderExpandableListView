@@ -275,9 +275,12 @@ public class MainActivity extends Activity implements
 
     @Override
     public void updatePinnedHeader(View headerView, int firstVisibleGroupPos) {
-        Group firstVisibleGroup = (Group) adapter.getGroup(firstVisibleGroupPos);
-        TextView textView = (TextView) headerView.findViewById(R.id.group);
-        textView.setText(firstVisibleGroup.getTitle());
+        if (adapter.getGroupCount() > 0) { // 防止列表在无数据的情况崩溃
+                Group firstVisibleGroup = (Group) adapter.getGroup(firstVisibleGroupPos);
+                TextView textView = (TextView) headerView.findViewById(R.id.group);
+                textView.setText(firstVisibleGroup.getTitle());
+            }
+        
     }
 
     @Override
@@ -286,6 +289,8 @@ public class MainActivity extends Activity implements
             View view = expandableListView.getChildAt(0);
             if (view != null && view.getTop() >= 0) {
                 return true;
+            } else if (adapter.getGroupCount == 0) { //保证列表没有数据的情况下，头部隐藏后还能继续下拉显示出来
+                    return true;
             }
         }
         return false;
